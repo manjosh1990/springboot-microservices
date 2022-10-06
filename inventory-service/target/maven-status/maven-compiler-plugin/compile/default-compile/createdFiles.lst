@@ -1,0 +1,5 @@
+com\springmicroservices\inventoryservice\controller\InventoryController.class
+com\springmicroservices\inventoryservice\model\Inventory.class
+com\springmicroservices\inventoryservice\InventoryServiceApplication.class
+com\springmicroservices\inventoryservice\repository\InventoryRepository.class
+com\springmicroservices\inventoryservice\service\InventoryService.class

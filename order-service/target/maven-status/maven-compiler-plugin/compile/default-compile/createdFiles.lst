@@ -1,0 +1,8 @@
+com\springmicroservices\orderservice\dto\OrderRequest.class
+com\springmicroservices\orderservice\model\OrderLineItems.class
+com\springmicroservices\orderservice\controller\OrderController.class
+com\springmicroservices\orderservice\service\OrderService.class
+com\springmicroservices\orderservice\OrderServiceApplication.class
+com\springmicroservices\orderservice\dto\OrderLineItemsDto.class
+com\springmicroservices\orderservice\model\Order.class
+com\springmicroservices\orderservice\repository\OrderRepository.class

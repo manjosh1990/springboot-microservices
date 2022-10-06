@@ -1,0 +1,5 @@
+D:\practice\springboot-microservices\product-service\microservices\inventory-service\src\main\java\com\springmicroservices\inventoryservice\model\Inventory.java
+D:\practice\springboot-microservices\product-service\microservices\inventory-service\src\main\java\com\springmicroservices\inventoryservice\InventoryServiceApplication.java
+D:\practice\springboot-microservices\product-service\microservices\inventory-service\src\main\java\com\springmicroservices\inventoryservice\repository\InventoryRepository.java
+D:\practice\springboot-microservices\product-service\microservices\inventory-service\src\main\java\com\springmicroservices\inventoryservice\service\InventoryService.java
+D:\practice\springboot-microservices\product-service\microservices\inventory-service\src\main\java\com\springmicroservices\inventoryservice\controller\InventoryController.java
