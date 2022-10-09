@@ -30,7 +30,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8181/realms/springboot-microservices-realm
+          issuer-uri: http://localhost:8181/auth/realms/springboot-microservices-realm
 
 #logging
 logging:
