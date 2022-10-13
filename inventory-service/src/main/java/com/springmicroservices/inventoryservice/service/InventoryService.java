@@ -21,7 +21,7 @@ public class InventoryService {
     public List<InventoryResponse> isInStock(List<String> skuCodes){
         log.info("wait started");
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

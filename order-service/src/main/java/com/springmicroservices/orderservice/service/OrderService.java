@@ -9,6 +9,8 @@ import com.springmicroservices.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,6 +30,9 @@ public class OrderService {
     @Autowired
     private WebClient.Builder webClientBuilder;
 
+    @Autowired
+    Tracer tracer;
+
     public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
@@ -40,21 +45,26 @@ public class OrderService {
         //get all skuCodes
         List<String> skuCodes = order.getOrderLineItemsList().stream().map(OrderLineItems::getSkuCode).collect(Collectors.toList());
 
+        Span inventoryLookupSpan = tracer.nextSpan().name("inventoryServiceLookup");
+        try (Tracer.SpanInScope spanInScope = tracer.withSpan(inventoryLookupSpan)) {
+            // call inventory service and place order if product is in stock
+            InventoryResponse[] inventoryResponses = webClientBuilder.build().get().uri("http://inventory-service/api/inventory"
+                            , uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
+                    .retrieve()
+                    .bodyToMono(InventoryResponse[].class)
+                    .block();
 
-        // call inventory service and place order if product is in stock
-        InventoryResponse[] inventoryResponses = webClientBuilder.build().get().uri("http://inventory-service/api/inventory"
-                        , uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
-                .retrieve()
-                .bodyToMono(InventoryResponse[].class)
-                .block();
-
-        assert inventoryResponses != null;
-        boolean allProducts = Arrays.stream(inventoryResponses).allMatch(InventoryResponse::isInStock);
-        if (allProducts) {
-            orderRepository.save(order);
-            return "Order placed successfully";
+            assert inventoryResponses != null;
+            boolean allProducts = Arrays.stream(inventoryResponses).allMatch(InventoryResponse::isInStock);
+            if (allProducts) {
+                orderRepository.save(order);
+                return "Order placed successfully";
+            }
+            throw new ServiceException("Product is not in stock, please try again");
+        } finally {
+            inventoryLookupSpan.end();
         }
-        throw new ServiceException("Product is not in stock, please try again");
+
     }
 
     private OrderLineItems mapToDto(OrderLineItemsDto orderLineItemsDto) {
