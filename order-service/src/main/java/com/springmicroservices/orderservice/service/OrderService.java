@@ -3,6 +3,7 @@ package com.springmicroservices.orderservice.service;
 import com.springmicroservices.orderservice.dto.InventoryResponse;
 import com.springmicroservices.orderservice.dto.OrderLineItemsDto;
 import com.springmicroservices.orderservice.dto.OrderRequest;
+import com.springmicroservices.orderservice.event.OrderPlacedEvent;
 import com.springmicroservices.orderservice.model.Order;
 import com.springmicroservices.orderservice.model.OrderLineItems;
 import com.springmicroservices.orderservice.repository.OrderRepository;
@@ -11,6 +12,7 @@ import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.Tracer;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,8 +33,9 @@ public class OrderService {
     private WebClient.Builder webClientBuilder;
 
     @Autowired
-    Tracer tracer;
+    private Tracer tracer;
 
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
     public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
@@ -58,6 +61,7 @@ public class OrderService {
             boolean allProducts = Arrays.stream(inventoryResponses).allMatch(InventoryResponse::isInStock);
             if (allProducts) {
                 orderRepository.save(order);
+                kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
                 return "Order placed successfully";
             }
             throw new ServiceException("Product is not in stock, please try again");
